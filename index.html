@@ -485,6 +485,30 @@ canvas { display: block; width: 100% !important; height: 130px !important; }
           </div>
         </div>
 
+        <div class="section-label">Measurements</div>
+        <div class="field-row" style="margin-bottom:10px">
+          <div class="field">
+            <label>Thigh circumference (cm)</label>
+            <input type="number" id="thighCirc" min="20" max="80" step="0.5" placeholder="e.g. 48.5">
+          </div>
+          <div class="field">
+            <label>Calf circumference (cm)</label>
+            <input type="number" id="calfCirc" min="20" max="60" step="0.5" placeholder="e.g. 36.0">
+          </div>
+        </div>
+
+        <div class="section-label">Hard Stop</div>
+        <div class="field" style="margin-bottom:10px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+            <input type="checkbox" id="hardStop" style="width:18px;height:18px;accent-color:var(--alert);flex-shrink:0">
+            <span style="font-size:.88rem">Flag today as a hard stop — something felt wrong enough to note separately</span>
+          </label>
+        </div>
+        <div class="field" id="hardStopNoteField" style="display:none">
+          <label>Hard stop details</label>
+          <textarea id="hardStopNote" placeholder="Describe what happened — sudden pain, unusual sensation, joint sound, wound change…" style="min-height:60px"></textarea>
+        </div>
+
         <div class="field">
           <label>Notes — what helped, what hurt, PT feedback</label>
           <textarea id="dayNotes" placeholder="Heel prop felt tight at 10 min. PT worked on patellar mob. Extension stretch easier this PM…"></textarea>
@@ -591,7 +615,7 @@ canvas { display: block; width: 100% !important; height: 130px !important; }
       <table class="hist-table">
         <thead>
           <tr>
-            <th>Date</th><th>Day</th><th>Flex°</th><th>Ext lag</th><th>Pain</th><th>Swelling</th><th>Walks</th><th>Steps</th><th>Sleep</th><th>Notes</th>
+            <th>Date</th><th>Day</th><th>Flex°</th><th>Ext lag</th><th>Pain</th><th>Swelling</th><th>Walks</th><th>Steps</th><th>Thigh cm</th><th>Calf cm</th><th>Sleep</th><th>⚑</th><th>Notes</th>
           </tr>
         </thead>
         <tbody id="histBody"></tbody>
@@ -613,26 +637,40 @@ canvas { display: block; width: 100% !important; height: 130px !important; }
   <div class="hero-strip">
     <div>
       <h1>Surgeon Prep</h1>
-      <p>Questions, concerns, and goals to bring to your pre-op and post-op appointments.</p>
+      <p>Questions for your surgeon and PT, goals, visit notes, and red flags.</p>
     </div>
   </div>
   <div class="grid2">
     <div class="stack">
       <div class="card">
-        <div class="card-title">Pre-Op Questions</div>
-        <div class="card-sub">Check the ones you want to ask. Print or show this screen.</div>
-        <div id="preOpQList"></div>
-        <div class="divider"></div>
+        <div class="card-title">Questions for My PT</div>
+        <div class="card-sub">Technique, progressions, and day-to-day adjustments.</div>
         <div class="field">
-          <label>Add your own question</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="ptQInput" placeholder="Type a question…">
+            <button class="btn-primary" id="addPtQ">Add</button>
+          </div>
+        </div>
+        <div id="ptQList" style="margin-top:4px"></div>
+        <div class="btn-row">
+          <button class="btn-secondary" id="clearPtChecked">Clear checked</button>
+          <button class="btn-gold" id="copyPtQs">Copy all PT questions</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">My Questions for Surgeon</div>
+        <div class="card-sub">Add questions as they come up. Check them off after your appointment.</div>
+        <div class="field">
           <div style="display:flex;gap:8px">
             <input type="text" id="customQInput" placeholder="Type a question…">
             <button class="btn-primary" id="addCustomQ">Add</button>
           </div>
         </div>
+        <div id="preOpQList" style="margin-top:4px"></div>
         <div class="btn-row">
           <button class="btn-secondary" id="clearChecked">Clear checked</button>
-          <button class="btn-gold" id="copyQs">Copy checked questions</button>
+          <button class="btn-gold" id="copyQs">Copy all questions</button>
         </div>
       </div>
 
@@ -889,28 +927,7 @@ const EXERCISES = [
   {name:'Ice / Elevation', priority:'After every session', badge:'alert', desc:'Crushed ice in bag with thin cloth barrier. Elevate leg above heart level. Full 20 minutes. Reduces synovial inflammation that drives scar formation.', sets:'20 min, minimum 4×/day', cue:'Leg above heart. Actually 20 minutes, not 10.', timer:1200},
 ];
 
-const PREOP_QUESTIONS = [
-  {q:'What exactly is loose — the tibial tray, femoral component, or patellar button?', tag:'Implant'},
-  {q:'Is there evidence of infection as a cause of loosening (culture results, CRP, ESR, aspiration)?', tag:'Infection'},
-  {q:'What components will be replaced vs retained during the revision?', tag:'Implant'},
-  {q:'Will patellar malalignment be corrected — is a patellar re-surfacing or lateral release planned?', tag:'Patella'},
-  {q:'How much scar tissue / arthrofibrosis are you expecting based on imaging and the prior surgery?', tag:'Fibrosis'},
-  {q:'What is your protocol for intraoperative manipulation under anesthesia if ROM is poor early?', tag:'Fibrosis'},
-  {q:'What is the plan if I develop arthrofibrosis post-revision — at what point and how aggressively do you intervene?', tag:'Fibrosis'},
-  {q:'What are the flexion and extension ROM targets I should hit, and by what day/week?', tag:'Goals'},
-  {q:'When do I start physical therapy — same day or day 1 post-op?', tag:'PT'},
-  {q:'Will I need a CPM (continuous passive motion) machine at home?', tag:'PT'},
-  {q:'What is the weight-bearing protocol immediately post-op?', tag:'Recovery'},
-  {q:'What DVT prevention protocol will be used (medication, compression, duration)?', tag:'Safety'},
-  {q:'What are the wound drainage and temperature thresholds that should trigger a call to your office?', tag:'Safety'},
-  {q:'What pain management approach is planned — nerve block, oral meds, IV?', tag:'Pain'},
-  {q:'How long will I need an assistive device (walker, cane)?', tag:'Recovery'},
-  {q:'What activity restrictions apply for the first 2 weeks, 6 weeks, 12 weeks?', tag:'Recovery'},
-  {q:'Are there any activities I should NOT do during recovery that might compromise the revision?', tag:'Recovery'},
-  {q:'What is your opinion on long-term activity goals — birding on uneven terrain, cycling?', tag:'Goals'},
-  {q:'What is the realistic timeline for feeling significantly better than I do now?', tag:'Goals'},
-  {q:'What is the failure rate and most common reason for re-revision in cases like mine?', tag:'Risk'},
-];
+
 
 // ═══════════════════════════════════════════
 // STATE
@@ -931,7 +948,7 @@ function loadState() {
     meds: [],
     medChecks: {},
     profile: {name:'', surgeon:'', surgeryNotes:''},
-    surgeon: {goals:'', notes:'', customQs:[], checkedQs:{}},
+    surgeon: {goals:'', notes:'', customQs:[], checkedQs:{}, ptQs:[], ptCheckedQs:{}},
   };
 }
 function saveState() {
@@ -1060,11 +1077,14 @@ function renderProgress() {
 function loadLogInputs() {
   const data = ensureDay(activeDate());
   const l = data.log || {};
-  ['flexion','extension','pain','temp','walks','iceBlocks','steps'].forEach(id => {
+  ['flexion','extension','pain','temp','walks','iceBlocks','steps','thighCirc','calfCirc'].forEach(id => {
     document.getElementById(id).value = l[id] ?? '';
   });
   document.getElementById('swelling').value = l.swelling ?? '';
   document.getElementById('dayNotes').value = l.notes ?? '';
+  document.getElementById('hardStop').checked = l.hardStop ?? false;
+  document.getElementById('hardStopNote').value = l.hardStopNote ?? '';
+  document.getElementById('hardStopNoteField').style.display = l.hardStop ? 'block' : 'none';
   renderStars('sleepStars', l.sleep ?? 0);
   renderStars('moodStars', l.mood ?? 0);
 }
@@ -1073,6 +1093,7 @@ function saveLog() {
   const date = activeDate();
   const data = ensureDay(date);
   const numOf = id => { const v = document.getElementById(id).value; return v === '' ? '' : Number(v); };
+  const hardStop = document.getElementById('hardStop').checked;
   data.log = {
     flexion: numOf('flexion'),
     extension: numOf('extension'),
@@ -1081,8 +1102,12 @@ function saveLog() {
     walks: numOf('walks'),
     iceBlocks: numOf('iceBlocks'),
     steps: numOf('steps'),
+    thighCirc: numOf('thighCirc'),
+    calfCirc: numOf('calfCirc'),
     swelling: document.getElementById('swelling').value,
     notes: document.getElementById('dayNotes').value,
+    hardStop,
+    hardStopNote: hardStop ? document.getElementById('hardStopNote').value : '',
     sleep: getSleepVal(),
     mood: getMoodVal(),
   };
@@ -1118,6 +1143,10 @@ function getMoodVal() {
       renderStars(id, val);
     });
   });
+});
+
+document.getElementById('hardStop').addEventListener('change', e => {
+  document.getElementById('hardStopNoteField').style.display = e.target.checked ? 'block' : 'none';
 });
 
 // ═══════════════════════════════════════════
@@ -1316,13 +1345,13 @@ function renderHistory() {
 
   const tbody = document.getElementById('histBody');
   if (!entries.length) {
-    tbody.innerHTML = '<tr><td colspan="10" class="no-data">No logged days yet. Save your first daily log on the Today tab.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13" class="no-data">No logged days yet. Save your first daily log on the Today tab.</td></tr>';
   } else {
     tbody.innerHTML = entries.map(([date, v]) => {
       const l = v.log || {};
       const day = postOpDay(date);
       const stars = n => n ? '★'.repeat(n) + '☆'.repeat(5-n) : '—';
-      return `<tr>
+      return `<tr${l.hardStop ? ' style="background:#fff8f8"' : ''}>
         <td>${date}</td>
         <td>${day >= 0 ? day : 'pre'}</td>
         <td>${l.flexion ?? '—'}</td>
@@ -1331,8 +1360,11 @@ function renderHistory() {
         <td>${l.swelling ?? '—'}</td>
         <td>${l.walks ?? '—'}</td>
         <td>${l.steps ?? '—'}</td>
+        <td>${l.thighCirc ?? '—'}</td>
+        <td>${l.calfCirc ?? '—'}</td>
         <td style="letter-spacing:.05em">${stars(l.sleep)}</td>
-        <td style="max-width:200px;font-family:'DM Sans',sans-serif;font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.notes || ''}</td>
+        <td style="color:var(--alert);font-size:1rem">${l.hardStop ? '⚑' : ''}</td>
+        <td style="max-width:180px;font-family:'DM Sans',sans-serif;font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.hardStop && l.hardStopNote ? '⚑ ' + l.hardStopNote : (l.notes || '')}</td>
       </tr>`;
     }).join('');
   }
@@ -1389,25 +1421,106 @@ function renderProtocol() {
 // SURGEON PREP
 // ═══════════════════════════════════════════
 function renderSurgeonPrep() {
-  const allQs = [...PREOP_QUESTIONS, ...(state.surgeon.customQs || []).map(q => ({q, tag:'Custom'}))];
+  // Surgeon questions
+  const qs = state.surgeon.customQs || [];
   const list = document.getElementById('preOpQList');
-  list.innerHTML = allQs.map((item, i) => {
-    const checked = state.surgeon.checkedQs?.[i] ?? false;
-    return `<div class="q-item">
-      <input type="checkbox" ${checked ? 'checked' : ''} data-qi="${i}" class="q-check">
-      <div class="q-text">${item.q} <span class="q-tag">${item.tag}</span></div>
-    </div>`;
-  }).join('');
-  list.querySelectorAll('.q-check').forEach(cb => {
-    cb.addEventListener('change', e => {
-      if (!state.surgeon.checkedQs) state.surgeon.checkedQs = {};
-      state.surgeon.checkedQs[e.target.dataset.qi] = e.target.checked;
-      saveState();
+  if (!qs.length) {
+    list.innerHTML = '<div style="color:var(--ink2);font-size:.85rem;padding:8px 0">No questions yet. Add one above.</div>';
+  } else {
+    list.innerHTML = qs.map((q, i) => {
+      const checked = state.surgeon.checkedQs?.[i] ?? false;
+      return `<div class="q-item">
+        <input type="checkbox" ${checked ? 'checked' : ''} data-qi="${i}" class="q-check">
+        <div class="q-text" style="flex:1">${q}</div>
+        <button class="btn-secondary btn-sm" onclick="deleteQ(${i})" style="flex-shrink:0">✕</button>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('.q-check').forEach(cb => {
+      cb.addEventListener('change', e => {
+        if (!state.surgeon.checkedQs) state.surgeon.checkedQs = {};
+        state.surgeon.checkedQs[e.target.dataset.qi] = e.target.checked;
+        saveState();
+      });
     });
-  });
+  }
+
+  // PT questions
+  const ptQs = state.surgeon.ptQs || [];
+  const ptList = document.getElementById('ptQList');
+  if (!ptQs.length) {
+    ptList.innerHTML = '<div style="color:var(--ink2);font-size:.85rem;padding:8px 0">No PT questions yet. Add one above.</div>';
+  } else {
+    ptList.innerHTML = ptQs.map((q, i) => {
+      const checked = state.surgeon.ptCheckedQs?.[i] ?? false;
+      return `<div class="q-item">
+        <input type="checkbox" ${checked ? 'checked' : ''} data-pi="${i}" class="pt-q-check">
+        <div class="q-text" style="flex:1">${q}</div>
+        <button class="btn-secondary btn-sm" onclick="deletePtQ(${i})" style="flex-shrink:0">✕</button>
+      </div>`;
+    }).join('');
+    ptList.querySelectorAll('.pt-q-check').forEach(cb => {
+      cb.addEventListener('change', e => {
+        if (!state.surgeon.ptCheckedQs) state.surgeon.ptCheckedQs = {};
+        state.surgeon.ptCheckedQs[e.target.dataset.pi] = e.target.checked;
+        saveState();
+      });
+    });
+  }
+
   document.getElementById('patientGoals').value = state.surgeon.goals || '';
   document.getElementById('surgeonNotes').value = state.surgeon.notes || '';
 }
+
+function deleteQ(i) {
+  state.surgeon.customQs.splice(i, 1);
+  const newChecked = {};
+  Object.entries(state.surgeon.checkedQs || {}).forEach(([k, v]) => {
+    const ki = parseInt(k);
+    if (ki < i) newChecked[ki] = v;
+    else if (ki > i) newChecked[ki - 1] = v;
+  });
+  state.surgeon.checkedQs = newChecked;
+  saveState();
+  renderSurgeonPrep();
+}
+
+function deletePtQ(i) {
+  state.surgeon.ptQs.splice(i, 1);
+  const newChecked = {};
+  Object.entries(state.surgeon.ptCheckedQs || {}).forEach(([k, v]) => {
+    const ki = parseInt(k);
+    if (ki < i) newChecked[ki] = v;
+    else if (ki > i) newChecked[ki - 1] = v;
+  });
+  state.surgeon.ptCheckedQs = newChecked;
+  saveState();
+  renderSurgeonPrep();
+}
+
+document.getElementById('addPtQ').addEventListener('click', () => {
+  const input = document.getElementById('ptQInput');
+  const q = input.value.trim();
+  if (!q) return;
+  if (!state.surgeon.ptQs) state.surgeon.ptQs = [];
+  state.surgeon.ptQs.push(q);
+  saveState();
+  input.value = '';
+  renderSurgeonPrep();
+});
+
+document.getElementById('clearPtChecked').addEventListener('click', () => {
+  state.surgeon.ptCheckedQs = {};
+  saveState();
+  renderSurgeonPrep();
+});
+
+document.getElementById('copyPtQs').addEventListener('click', () => {
+  const qs = state.surgeon.ptQs || [];
+  if (!qs.length) { alert('No PT questions to copy yet.'); return; }
+  navigator.clipboard.writeText(qs.map((q,i) => `${i+1}. ${q}`).join('\n'))
+    .then(() => alert('Copied ' + qs.length + ' PT questions to clipboard.'))
+    .catch(() => alert(qs.map((q,i) => `${i+1}. ${q}`).join('\n')));
+});
 
 document.getElementById('addCustomQ').addEventListener('click', () => {
   const input = document.getElementById('customQInput');
@@ -1427,15 +1540,11 @@ document.getElementById('clearChecked').addEventListener('click', () => {
 });
 
 document.getElementById('copyQs').addEventListener('click', () => {
-  const allQs = [...PREOP_QUESTIONS, ...(state.surgeon.customQs || []).map(q => ({q, tag:'Custom'}))];
-  const checked = Object.entries(state.surgeon.checkedQs || {})
-    .filter(([,v]) => v)
-    .map(([i]) => allQs[i]?.q)
-    .filter(Boolean);
-  if (!checked.length) { alert('No questions checked.'); return; }
-  navigator.clipboard.writeText(checked.map((q,i) => `${i+1}. ${q}`).join('\n'))
-    .then(() => alert('Copied ' + checked.length + ' questions to clipboard.'))
-    .catch(() => alert(checked.map((q,i) => `${i+1}. ${q}`).join('\n')));
+  const qs = state.surgeon.customQs || [];
+  if (!qs.length) { alert('No questions to copy yet.'); return; }
+  navigator.clipboard.writeText(qs.map((q,i) => `${i+1}. ${q}`).join('\n'))
+    .then(() => alert('Copied ' + qs.length + ' questions to clipboard.'))
+    .catch(() => alert(qs.map((q,i) => `${i+1}. ${q}`).join('\n')));
 });
 
 document.getElementById('saveGoals').addEventListener('click', () => {
