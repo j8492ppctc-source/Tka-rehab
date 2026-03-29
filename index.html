@@ -1,0 +1,1766 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Revision TKA · Rehab Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0ede8;
+  --card: #faf8f5;
+  --card2: #fff;
+  --ink: #1a1410;
+  --ink2: #5c5248;
+  --line: #d9d3cb;
+  --accent: #8b4513;
+  --accent2: #2d6a4f;
+  --accent3: #1d3557;
+  --warn-bg: #fff3e0;
+  --warn: #e65100;
+  --alert-bg: #fce4ec;
+  --alert: #b71c1c;
+  --good-bg: #e8f5e9;
+  --good: #1b5e20;
+  --gold: #c68b00;
+  --shadow: 0 2px 16px rgba(26,20,16,.08), 0 1px 3px rgba(26,20,16,.06);
+  --shadow-lg: 0 8px 32px rgba(26,20,16,.13);
+  --r: 16px;
+  --r-sm: 10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+/* ── NAV ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--ink);
+  display: flex; align-items: center; gap: 0;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.topbar::-webkit-scrollbar { display: none; }
+.topbar-brand {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1rem; color: #faf8f5;
+  padding: 14px 20px 14px 16px;
+  white-space: nowrap; flex-shrink: 0;
+  border-right: 1px solid rgba(255,255,255,.12);
+}
+.nav-tabs { display: flex; }
+.nav-tab {
+  padding: 14px 16px;
+  color: rgba(250,248,245,.55);
+  font-size: .85rem; font-weight: 500;
+  cursor: pointer; white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  transition: color .15s, border-color .15s;
+  user-select: none;
+}
+.nav-tab.active { color: #faf8f5; border-bottom-color: #c68b00; }
+.nav-tab:hover:not(.active) { color: rgba(250,248,245,.8); }
+
+/* ── LAYOUT ── */
+.app { max-width: 1100px; margin: 0 auto; padding: 20px 16px 80px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.grid2 { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--card);
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+.card-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.1rem; font-weight: 400;
+  margin-bottom: 4px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+.card-sub { color: var(--ink2); font-size: .82rem; margin-bottom: 14px; }
+
+/* ── HERO STRIP ── */
+.hero-strip {
+  background: var(--ink);
+  border-radius: var(--r);
+  padding: 20px 22px;
+  color: #faf8f5;
+  margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;
+}
+.hero-strip h1 {
+  font-family: 'DM Serif Display', serif; font-size: 1.5rem; font-weight: 400;
+  margin-bottom: 4px;
+}
+.hero-strip p { opacity: .7; font-size: .88rem; max-width: 480px; }
+.hero-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+.hstat { text-align: center; }
+.hstat .val { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--gold); }
+.hstat .lbl { font-size: .75rem; opacity: .65; }
+
+/* ── METRICS GRID ── */
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.metric {
+  background: var(--card2);
+  border: 1px solid var(--line); border-radius: var(--r-sm);
+  padding: 12px;
+}
+.metric label { display: block; color: var(--ink2); font-size: .78rem; margin-bottom: 6px; font-weight: 500; letter-spacing: .02em; text-transform: uppercase; }
+.metric-val { font-family: 'DM Mono', monospace; font-size: 1.6rem; font-weight: 500; }
+.metric-val.good { color: var(--accent2); }
+.metric-val.warn { color: var(--warn); }
+.metric-val.alert { color: var(--alert); }
+
+/* ── INPUTS ── */
+input[type="number"], input[type="date"], input[type="text"], select, textarea {
+  width: 100%; border: 1px solid var(--line); border-radius: var(--r-sm);
+  padding: 10px 12px; font-size: .95rem; background: var(--card2);
+  color: var(--ink); font-family: 'DM Sans', sans-serif;
+  transition: border-color .15s, box-shadow .15s;
+  appearance: none; -webkit-appearance: none;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(139,69,19,.12);
+}
+textarea { min-height: 80px; resize: vertical; }
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: .82rem; color: var(--ink2); font-weight: 500; margin-bottom: 5px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+/* ── BUTTONS ── */
+button {
+  border: none; border-radius: var(--r-sm); padding: 10px 16px;
+  font-size: .88rem; font-weight: 700; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: opacity .15s, transform .08s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+button:active { transform: scale(.97); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { opacity: .9; }
+.btn-secondary { background: #e8e3dd; color: var(--ink); }
+.btn-secondary:hover { background: #ddd8d1; }
+.btn-green { background: var(--accent2); color: #fff; }
+.btn-green:hover { opacity: .9; }
+.btn-danger { background: var(--alert); color: #fff; }
+.btn-gold { background: var(--gold); color: #fff; }
+.btn-sm { padding: 7px 12px; font-size: .8rem; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+/* ── BADGES & PILLS ── */
+.badge {
+  display: inline-block; border-radius: 999px; padding: 3px 10px;
+  font-size: .74rem; font-weight: 700; letter-spacing: .03em;
+}
+.badge-good { background: var(--good-bg); color: var(--good); }
+.badge-warn { background: var(--warn-bg); color: var(--warn); }
+.badge-alert { background: var(--alert-bg); color: var(--alert); }
+.badge-neutral { background: #e8e3dd; color: var(--ink2); }
+.badge-gold { background: #fff8e1; color: var(--gold); }
+.pill-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill {
+  border-radius: 999px; padding: 5px 12px; background: #ede8e1; color: var(--ink2);
+  font-size: .8rem; font-weight: 500;
+}
+.pill.accent { background: #f0e8df; color: var(--accent); }
+
+/* ── CHECKLIST ── */
+.checklist { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.check-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 14px; border: 1px solid var(--line);
+  border-radius: 12px; background: var(--card2);
+  cursor: pointer; transition: background .12s, border-color .12s;
+}
+.check-item:hover { background: #f5f1ec; }
+.check-item.done { background: var(--good-bg); border-color: #b2dfdb; }
+.check-item.done .check-title { text-decoration: line-through; color: var(--ink2); }
+.check-item input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; accent-color: var(--accent2); cursor: pointer; }
+.check-title { font-weight: 600; font-size: .9rem; display: block; }
+.check-desc { font-size: .8rem; color: var(--ink2); margin-top: 2px; line-height: 1.4; }
+
+/* ── PROGRESS BAR ── */
+.prog-wrap { background: #e0d9d0; border-radius: 999px; height: 10px; overflow: hidden; }
+.prog-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 999px; transition: width .4s ease; }
+
+/* ── PHASES TIMELINE ── */
+.phases { display: flex; flex-direction: column; gap: 8px; }
+.phase-row {
+  border-left: 4px solid var(--line); padding: 10px 12px;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  background: var(--card2); border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  transition: border-left-color .2s;
+}
+.phase-row.current { border-left-color: var(--accent); background: #fdf6f1; }
+.phase-row.completed { border-left-color: var(--accent2); background: var(--good-bg); }
+.phase-header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.phase-title { font-weight: 700; font-size: .9rem; }
+.phase-targets { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.phase-target { background: #ede8e1; border-radius: 6px; padding: 3px 8px; font-size: .75rem; color: var(--ink2); }
+
+/* ── ALERT / TIP BOXES ── */
+.alertbox {
+  border-radius: 12px; padding: 14px 16px; line-height: 1.5;
+  border-left: 4px solid transparent; font-size: .88rem;
+}
+.alertbox.alert { background: var(--alert-bg); border-left-color: var(--alert); color: #7f0000; }
+.alertbox.warn { background: var(--warn-bg); border-left-color: var(--warn); color: #8a3000; }
+.alertbox.good { background: var(--good-bg); border-left-color: var(--accent2); color: #1b5e20; }
+.alertbox.info { background: #e8f4fd; border-left-color: var(--accent3); color: #0d2744; }
+.alertbox + .alertbox { margin-top: 8px; }
+.alertbox strong { display: block; margin-bottom: 4px; }
+
+/* ── CHARTS ── */
+.chart-wrap { background: var(--card2); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 12px; }
+.chart-label { font-size: .78rem; color: var(--ink2); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+canvas { display: block; width: 100% !important; height: 130px !important; }
+
+/* ── CALENDAR HEATMAP ── */
+.heatmap-grid { display: flex; flex-wrap: wrap; gap: 3px; }
+.hm-cell {
+  width: 18px; height: 18px; border-radius: 3px;
+  background: #e0d9d0; cursor: pointer;
+  transition: transform .1s;
+  position: relative;
+}
+.hm-cell:hover { transform: scale(1.3); z-index: 1; }
+.hm-cell.day0 { background: #e0d9d0; }
+.hm-cell.day1 { background: #c5e1a5; }
+.hm-cell.day2 { background: #8bc34a; }
+.hm-cell.day3 { background: #558b2f; }
+.hm-cell.has-log { outline: 2px solid var(--accent); }
+.hm-month-labels { display: flex; gap: 3px; margin-bottom: 4px; }
+.hm-month-lbl { font-size: .68rem; color: var(--ink2); }
+
+/* ── ROM TARGETS ── */
+.rom-targets { display: flex; flex-direction: column; gap: 6px; }
+.rom-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-radius: 8px; background: var(--card2); border: 1px solid var(--line); }
+.rom-row .label { font-size: .82rem; color: var(--ink2); }
+.rom-row .target { font-family: 'DM Mono', monospace; font-size: .88rem; font-weight: 500; }
+.rom-row .status { font-size: .75rem; }
+
+/* ── EXERCISE TIMER ── */
+.exercise-card {
+  border: 1px solid var(--line); border-radius: 12px; background: var(--card2);
+  overflow: hidden; margin-bottom: 8px;
+}
+.exercise-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; cursor: pointer; gap: 10px;
+}
+.exercise-header:hover { background: #f5f1ec; }
+.exercise-name { font-weight: 700; font-size: .9rem; }
+.exercise-priority { font-size: .72rem; font-weight: 700; }
+.exercise-body { padding: 12px 14px; border-top: 1px solid var(--line); display: none; }
+.exercise-body.open { display: block; }
+.timer-display {
+  font-family: 'DM Mono', monospace; font-size: 2.2rem; font-weight: 500;
+  text-align: center; margin: 10px 0; color: var(--accent);
+}
+.timer-controls { display: flex; justify-content: center; gap: 8px; }
+
+/* ── SURGEON Q BUILDER ── */
+.q-item {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 10px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--card2); margin-bottom: 6px;
+}
+.q-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+.q-text { font-size: .88rem; line-height: 1.45; }
+.q-tag { font-size: .72rem; background: #ede8e1; color: var(--ink2); border-radius: 4px; padding: 1px 6px; margin-left: 6px; }
+
+/* ── AI ASSISTANT ── */
+.ai-bubble {
+  background: linear-gradient(135deg, #1a1410 0%, #2d1f14 100%);
+  color: #faf8f5; border-radius: var(--r); padding: 16px;
+  font-size: .88rem; line-height: 1.6; min-height: 80px;
+  white-space: pre-wrap;
+}
+.ai-bubble.loading { opacity: .6; }
+.ai-thinking { display: flex; gap: 4px; align-items: center; }
+.ai-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--gold);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+.ai-dot:nth-child(2) { animation-delay: .2s; }
+.ai-dot:nth-child(3) { animation-delay: .4s; }
+@keyframes pulse { 0%,100%{opacity:.3;transform:scale(.8)} 50%{opacity:1;transform:scale(1)} }
+.ai-prompt-row { display: flex; gap: 8px; margin-top: 10px; }
+.ai-prompt-row input { flex: 1; }
+
+/* ── HISTORY TABLE ── */
+.hist-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.hist-table th { background: #ede8e1; padding: 8px 10px; text-align: left; font-weight: 700; font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; }
+.hist-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); font-family: 'DM Mono', monospace; }
+.hist-table tr:hover td { background: #f5f1ec; }
+.hist-table .no-data { font-family: 'DM Sans', sans-serif; color: var(--ink2); text-align: center; padding: 24px; }
+
+/* ── SLEEP / MOOD STARS ── */
+.star-row { display: flex; gap: 6px; }
+.star { font-size: 1.4rem; cursor: pointer; line-height: 1; transition: transform .1s; filter: grayscale(1); }
+.star.lit { filter: none; }
+.star:hover { transform: scale(1.2); }
+
+/* ── MEDICATION TRACKER ── */
+.med-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border: 1px solid var(--line);
+  border-radius: 10px; background: var(--card2); margin-bottom: 6px;
+}
+.med-check { width: 20px; height: 20px; accent-color: var(--accent2); cursor: pointer; flex-shrink: 0; }
+.med-name { font-weight: 600; font-size: .88rem; }
+.med-dose { font-size: .78rem; color: var(--ink2); font-family: 'DM Mono', monospace; }
+.med-time { margin-left: auto; font-size: .75rem; color: var(--ink2); }
+
+/* ── SECTION DIVIDER ── */
+.divider { height: 1px; background: var(--line); margin: 16px 0; }
+.section-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--ink2); margin-bottom: 10px; }
+
+/* ── SWIPE INDICATOR ── */
+.scroll-hint { text-align: center; color: var(--ink2); font-size: .75rem; padding: 8px 0 4px; display: none; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 860px) {
+  .grid2 { grid-template-columns: 1fr; }
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 540px) {
+  .metrics { grid-template-columns: 1fr 1fr; }
+  .field-row3 { grid-template-columns: 1fr 1fr; }
+  .hstat .val { font-size: 1.5rem; }
+  .scroll-hint { display: block; }
+}
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-brand">Revision TKA</div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" data-tab="today">Today</div>
+    <div class="nav-tab" data-tab="exercises">Exercises</div>
+    <div class="nav-tab" data-tab="history">History</div>
+    <div class="nav-tab" data-tab="protocol">Protocol</div>
+    <div class="nav-tab" data-tab="surgeon">Surgeon Prep</div>
+    <div class="nav-tab" data-tab="meds">Meds</div>
+    <div class="nav-tab" data-tab="ai">AI Coach</div>
+    <div class="nav-tab" data-tab="settings">Settings</div>
+  </div>
+</nav>
+<p class="scroll-hint">← swipe to see all tabs →</p>
+
+<div class="app">
+
+<!-- ══════════ TODAY ══════════ -->
+<div class="tab-panel active" id="tab-today">
+  <div class="hero-strip">
+    <div>
+      <h1 id="heroTitle">Knee Revision Rehab</h1>
+      <p id="heroPhase">Loading your protocol phase…</p>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><div class="val" id="heroDay">—</div><div class="lbl">Post-op day</div></div>
+      <div class="hstat"><div class="val" id="heroWeek">—</div><div class="lbl">Week</div></div>
+      <div class="hstat"><div class="val" id="heroFlexion">—°</div><div class="lbl">Last flexion</div></div>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div id="alertsContainer" style="margin-bottom:16px"></div>
+
+  <div class="grid2">
+    <div class="stack">
+
+      <!-- Session Checklist -->
+      <div class="card">
+        <div class="card-title">
+          Today's Sessions
+          <span class="badge" id="progressBadge">0 / 0</span>
+        </div>
+        <div class="card-sub" id="todayDateLine">—</div>
+        <div class="prog-wrap" style="margin-bottom:14px">
+          <div class="prog-bar" id="progBar" style="width:0%"></div>
+        </div>
+        <div class="checklist" id="todayChecklist"></div>
+        <div class="btn-row">
+          <button class="btn-green" id="markAll">✓ Mark all done</button>
+          <button class="btn-secondary" id="resetToday">↺ Reset</button>
+        </div>
+      </div>
+
+      <!-- Daily Log -->
+      <div class="card">
+        <div class="card-title">Daily Log</div>
+        <div class="card-sub">Record your numbers for today</div>
+
+        <div class="section-label">Range of Motion</div>
+        <div class="field-row" style="margin-bottom:10px">
+          <div class="field">
+            <label>Flexion (degrees)</label>
+            <input type="number" id="flexion" min="0" max="160" placeholder="e.g. 95">
+          </div>
+          <div class="field">
+            <label>Extension lag (degrees)</label>
+            <input type="number" id="extension" min="0" max="30" placeholder="e.g. 2">
+          </div>
+        </div>
+
+        <div class="section-label">Vitals</div>
+        <div class="field-row3" style="margin-bottom:10px">
+          <div class="field">
+            <label>Pain (0–10)</label>
+            <input type="number" id="pain" min="0" max="10" placeholder="e.g. 4">
+          </div>
+          <div class="field">
+            <label>Swelling</label>
+            <select id="swelling">
+              <option value="">Choose</option>
+              <option>Much better</option>
+              <option>Better</option>
+              <option>Same</option>
+              <option>Worse</option>
+              <option>Much worse</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Temperature (°F)</label>
+            <input type="number" id="temp" min="96" max="104" step="0.1" placeholder="98.6">
+          </div>
+        </div>
+
+        <div class="field-row3" style="margin-bottom:10px">
+          <div class="field">
+            <label>Walk sessions</label>
+            <input type="number" id="walks" min="0" max="20" placeholder="5">
+          </div>
+          <div class="field">
+            <label>Ice blocks</label>
+            <input type="number" id="iceBlocks" min="0" max="20" placeholder="4">
+          </div>
+          <div class="field">
+            <label>Steps today</label>
+            <input type="number" id="steps" min="0" max="30000" placeholder="2000">
+          </div>
+        </div>
+
+        <div class="section-label">Wellbeing</div>
+        <div class="field-row" style="margin-bottom:10px">
+          <div class="field">
+            <label>Sleep quality</label>
+            <div class="star-row" id="sleepStars">
+              <span class="star" data-v="1">⭐</span>
+              <span class="star" data-v="2">⭐</span>
+              <span class="star" data-v="3">⭐</span>
+              <span class="star" data-v="4">⭐</span>
+              <span class="star" data-v="5">⭐</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Mood / Energy</label>
+            <div class="star-row" id="moodStars">
+              <span class="star" data-v="1">🌤</span>
+              <span class="star" data-v="2">🌤</span>
+              <span class="star" data-v="3">🌤</span>
+              <span class="star" data-v="4">🌤</span>
+              <span class="star" data-v="5">🌤</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Notes — what helped, what hurt, PT feedback</label>
+          <textarea id="dayNotes" placeholder="Heel prop felt tight at 10 min. PT worked on patellar mob. Extension stretch easier this PM…"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" id="saveLog">Save Log</button>
+          <button class="btn-secondary" id="loadToday">Reload Saved</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="stack">
+
+      <!-- Phase targets -->
+      <div class="card">
+        <div class="card-title">Phase Targets <span class="badge badge-warn" id="phasePill">—</span></div>
+        <div class="card-sub" id="phaseDesc">—</div>
+        <div class="pill-row" id="targetPills"></div>
+      </div>
+
+      <!-- Arthrofibrosis guard -->
+      <div class="card">
+        <div class="card-title">Arthrofibrosis Guard <span class="badge badge-alert">High vigilance</span></div>
+        <div id="arfAlerts">
+          <div class="alertbox info"><strong>Enter today's log to see personalized guidance.</strong></div>
+        </div>
+        <div class="divider"></div>
+        <div class="alertbox info" style="font-size:.82rem">
+          <strong>Core rules</strong>
+          Extension is priority #1. Frequency beats intensity. Swelling drives scar — ice relentlessly. Act on any stalled ROM in 3 days, not a week.
+        </div>
+      </div>
+
+      <!-- Mini charts -->
+      <div class="card">
+        <div class="card-title">Progress Charts</div>
+        <div class="card-sub">Last 14 logged days</div>
+        <div class="chart-wrap" style="margin-bottom:10px">
+          <div class="chart-label">Flexion (°)</div>
+          <canvas id="chartFlexion"></canvas>
+        </div>
+        <div class="chart-wrap" style="margin-bottom:10px">
+          <div class="chart-label">Extension lag (°) — lower is better</div>
+          <canvas id="chartExt"></canvas>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-label">Pain (0–10) — lower is better</div>
+          <canvas id="chartPain"></canvas>
+        </div>
+      </div>
+
+      <!-- Upcoming -->
+      <div class="card">
+        <div class="card-title">PT &amp; Surgeon Visits</div>
+        <div class="field-row" style="margin-bottom:8px">
+          <div class="field">
+            <label>Next PT appointment</label>
+            <input type="date" id="nextPt">
+          </div>
+          <div class="field">
+            <label>Next surgeon visit</label>
+            <input type="date" id="nextSurgeon">
+          </div>
+        </div>
+        <div class="field">
+          <label>PT notes / homework</label>
+          <textarea id="ptNotes" placeholder="Patellar mobilization sets, extension overpressure at 10 min…"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" id="savePt">Save</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ EXERCISES ══════════ -->
+<div class="tab-panel" id="tab-exercises">
+  <div class="hero-strip">
+    <div>
+      <h1>Exercise Library</h1>
+      <p>Tap an exercise to expand it and start a built-in timer. Priority exercises are marked.</p>
+    </div>
+  </div>
+  <div id="exerciseList"></div>
+</div>
+
+<!-- ══════════ HISTORY ══════════ -->
+<div class="tab-panel" id="tab-history">
+  <div class="hero-strip">
+    <div><h1>History</h1><p>Full log of every day you've recorded.</p></div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">Activity Heatmap</div>
+    <div class="card-sub">Days logged since surgery</div>
+    <div id="heatmapContainer"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Log Entries</div>
+    <div class="card-sub">Most recent first</div>
+    <div style="overflow-x:auto">
+      <table class="hist-table">
+        <thead>
+          <tr>
+            <th>Date</th><th>Day</th><th>Flex°</th><th>Ext lag</th><th>Pain</th><th>Swelling</th><th>Walks</th><th>Steps</th><th>Sleep</th><th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="histBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PROTOCOL ══════════ -->
+<div class="tab-panel" id="tab-protocol">
+  <div class="hero-strip">
+    <div><h1>12-Week Protocol</h1><p>Arthrofibrosis-focused progression for revision TKA.</p></div>
+  </div>
+  <div class="phases" id="protocolList"></div>
+</div>
+
+<!-- ══════════ SURGEON PREP ══════════ -->
+<div class="tab-panel" id="tab-surgeon">
+  <div class="hero-strip">
+    <div>
+      <h1>Surgeon Prep</h1>
+      <p>Questions, concerns, and goals to bring to your pre-op and post-op appointments.</p>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">Pre-Op Questions</div>
+        <div class="card-sub">Check the ones you want to ask. Print or show this screen.</div>
+        <div id="preOpQList"></div>
+        <div class="divider"></div>
+        <div class="field">
+          <label>Add your own question</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="customQInput" placeholder="Type a question…">
+            <button class="btn-primary" id="addCustomQ">Add</button>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-secondary" id="clearChecked">Clear checked</button>
+          <button class="btn-gold" id="copyQs">Copy checked questions</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Goals to Share</div>
+        <div class="card-sub">What you're aiming for — helps your surgeon know your priorities</div>
+        <textarea id="patientGoals" placeholder="Return to birding trails (uneven terrain). Ride stationary bike comfortably. No constant pain at rest…" style="min-height:140px"></textarea>
+        <div class="btn-row"><button class="btn-primary" id="saveGoals">Save Goals</button></div>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">Post-Op Notes</div>
+        <div class="card-sub">Record answers and instructions from each visit</div>
+        <textarea id="surgeonNotes" placeholder="Post-op day 7 visit: Dr. said flexion is on track, extension needs more work. Start clinic PT Monday. No driving until week 4…" style="min-height:200px"></textarea>
+        <div class="btn-row"><button class="btn-primary" id="saveSurgeonNotes">Save Notes</button></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Red Flag Criteria</div>
+        <div class="card-sub">Call the surgical team for any of these</div>
+        <div class="alertbox alert" style="margin-bottom:8px"><strong>Call now:</strong> Fever ≥ 101.5°F, sudden severe pain beyond baseline, calf swelling or pain (DVT risk), wound drainage that is cloudy or foul-smelling, loss of sensation or circulation in foot.</div>
+        <div class="alertbox warn"><strong>Call same day:</strong> ROM acutely worse (not just a tough day), swelling that balloons despite icing, extension gap suddenly increases, unexpected new sounds from the joint.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MEDS ══════════ -->
+<div class="tab-panel" id="tab-meds">
+  <div class="hero-strip">
+    <div><h1>Medications</h1><p>Track your daily medication schedule. Check off each dose as taken.</p></div>
+  </div>
+  <div class="grid2">
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">Today's Doses</div>
+        <div class="card-sub" id="medDate">—</div>
+        <div id="medList"></div>
+        <div class="btn-row">
+          <button class="btn-secondary" id="resetMeds">Reset all for today</button>
+        </div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">Add / Edit Medications</div>
+        <div class="field"><label>Medication name</label><input type="text" id="medName" placeholder="Aspirin"></div>
+        <div class="field-row">
+          <div class="field"><label>Dose</label><input type="text" id="medDose" placeholder="325mg"></div>
+          <div class="field"><label>Frequency</label><input type="text" id="medFreq" placeholder="Twice daily"></div>
+        </div>
+        <div class="field"><label>Notes</label><input type="text" id="medNotes" placeholder="With food, DVT prevention"></div>
+        <div class="btn-row"><button class="btn-primary" id="addMed">Add Medication</button></div>
+        <div class="divider"></div>
+        <div class="section-label">Saved Medications</div>
+        <div id="medEditList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ AI COACH ══════════ -->
+<div class="tab-panel" id="tab-ai">
+  <div class="hero-strip">
+    <div>
+      <h1>AI Rehab Coach</h1>
+      <p>Ask anything about your recovery. Gets context from your recent logs automatically.</p>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">Ask a Question</div>
+        <div class="card-sub">Powered by Claude — answers are informational, not medical advice</div>
+        <div class="field">
+          <label>Your question</label>
+          <textarea id="aiQuestion" placeholder="Why is my extension still lagging at day 10? What can I do between PT visits to improve patellar tracking? Should I be worried about…" style="min-height:100px"></textarea>
+        </div>
+        <div class="pill-row" style="margin-bottom:10px" id="aiQuickBtns"></div>
+        <div class="btn-row">
+          <button class="btn-gold" id="askAI">✦ Ask AI Coach</button>
+          <button class="btn-secondary" id="clearAI">Clear</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Response</div>
+        <div class="ai-bubble" id="aiResponse">Your AI coach's response will appear here. It will automatically include context from your recent daily logs and current phase.</div>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">Daily AI Summary</div>
+        <div class="card-sub">Auto-generated review of today's data</div>
+        <div class="btn-row" style="margin-bottom:12px">
+          <button class="btn-primary" id="genSummary">✦ Generate Today's Summary</button>
+        </div>
+        <div class="ai-bubble" id="aiSummary">Click above to generate an AI review of today's log, phase position, and recommendations.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Suggested Questions</div>
+        <div class="card-sub">Tap any to ask it instantly</div>
+        <div id="suggestedQs"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ SETTINGS ══════════ -->
+<div class="tab-panel" id="tab-settings">
+  <div class="hero-strip">
+    <div><h1>Settings</h1><p>Configure surgery date, import/export data, and manage your setup.</p></div>
+  </div>
+  <div class="grid2">
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">Surgery Date</div>
+        <div class="field-row">
+          <div class="field"><label>Surgery date</label><input type="date" id="surgeryDate"></div>
+          <div class="field"><label>View as date (debug)</label><input type="date" id="todayOverride"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" id="applyDates">Apply</button>
+          <button class="btn-secondary" id="useToday">Use today</button>
+        </div>
+        <div style="font-size:.8rem;color:var(--ink2);margin-top:10px">Default surgery date: April 7, 2026. Change this before surgery if the date shifts.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Export / Import</div>
+        <div class="card-sub">Transfer data between devices. Export creates a JSON backup you can re-import.</div>
+        <div class="btn-row">
+          <button class="btn-primary" id="exportBtn">Export Data</button>
+          <button class="btn-secondary" id="importBtn">Import Data</button>
+          <input type="file" id="importFile" accept="application/json" style="display:none">
+        </div>
+        <div class="divider"></div>
+        <div class="btn-row">
+          <button class="btn-danger" id="clearAllBtn">Clear All Data</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">Patient Info</div>
+        <div class="field"><label>Your name (optional)</label><input type="text" id="patientName" placeholder="David"></div>
+        <div class="field"><label>Surgeon / practice</label><input type="text" id="surgeonName" placeholder="Dr. Smith, UNC Ortho"></div>
+        <div class="field"><label>Surgery type / notes</label><input type="text" id="surgeryNotes" placeholder="Revision TKA, right knee, patellar malalignment"></div>
+        <div class="btn-row"><button class="btn-primary" id="saveProfile">Save</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /.app -->
+
+<script>
+// ═══════════════════════════════════════════
+// DATA MODEL
+// ═══════════════════════════════════════════
+const STORAGE_KEY = 'revision-tka-v2';
+const DEFAULT_SURGERY = '2026-04-07';
+
+const PROTOCOL = [
+  {
+    start:0, end:3, title:'Days 0–3', mode:'Home PT', badge:'warn',
+    targets:['Extension near 0°','Flexion 60–75°','Quad firing present','Frequent swelling control'],
+    sessions:[
+      {name:'Heel prop / extension stretch', desc:'Heel elevated, knee unsupported. 5–10 min. 5–6x daily. PRIORITY #1.', priority:true, timerSec:600},
+      {name:'Heel slides ×10', desc:'Gentle flexion. 5-sec holds. Slide heel toward body.', timerSec:120},
+      {name:'Quad sets ×20', desc:'Tighten thigh, press knee down. Add SLR only if no extension lag.', timerSec:180},
+      {name:'Walk 3–5 min', desc:'Every 2–3 hours. Short, controlled. Heel strike focus.', timerSec:300},
+      {name:'Ice / elevate 20 min', desc:'After every exercise block. Consistent, not optional.', timerSec:1200},
+    ],
+    text:'Hospital-to-home transition. Main mission: prevent the knee from stiffening immediately. Scar tissue begins forming within hours of surgery.',
+  },
+  {
+    start:4, end:7, title:'Days 4–7', mode:'Home PT', badge:'warn',
+    targets:['Extension 0°','Flexion 80–90°','Short household walking','5 sessions/day'],
+    sessions:[
+      {name:'Morning long session', desc:'Heel prop 10 min + heel slides ×15 + quad sets + glute work.', priority:true, timerSec:900},
+      {name:'Midday reset', desc:'Heel prop 5–10 min + heel slides ×10.', timerSec:600},
+      {name:'Walk 5–7 min', desc:'Several times daily. Controlled gait.', timerSec:420},
+      {name:'Ice/elevate block', desc:'At least 4 times if swelling is active.', timerSec:1200},
+      {name:'Evening extension reset', desc:'Longer heel prop before bed — do not skip this.', priority:true, timerSec:600},
+    ],
+    text:'High-risk scar tissue window is open. Frequency matters far more than one intense session.',
+  },
+  {
+    start:8, end:14, title:'Days 8–14', mode:'Home + clinic PT starting', badge:'warn',
+    targets:['Flexion 90–100°','Maintain 0° extension','Bike rocking if cleared','Clinic PT 2–3×/week'],
+    sessions:[
+      {name:'Extension maintenance', desc:'Heel prop 3–5×/day. Non-negotiable.', priority:true, timerSec:600},
+      {name:'Heel slides / seated bends', desc:'15 reps with sustained holds.', timerSec:150},
+      {name:'Bike rocking', desc:'5–10 min if available and surgeon-cleared.', timerSec:600},
+      {name:'Sit-to-stand / mini squat', desc:'Controlled strength block. Quality not quantity.', timerSec:180},
+      {name:'PT visit homework', desc:'Manual stretching, patellar mobility, gait work.'},
+    ],
+    text:'Still a daily home program — not just going to clinic. Every day at home counts.',
+  },
+  {
+    start:15, end:28, title:'Weeks 3–4', mode:'Outpatient PT focus', badge:'alert',
+    targets:['Flexion 100–110°','Full extension','Normalize gait','3 clinic PT visits ideal'],
+    sessions:[
+      {name:'Extension block daily', desc:'Do not drop this even if flexion is improving.', priority:true, timerSec:600},
+      {name:'Aggressive flexion work', desc:'Wall slides, heel slides, bike full revolutions.', timerSec:300},
+      {name:'Step-ups / TKEs', desc:'Low-load strengthening. Slow and deliberate.', timerSec:180},
+      {name:'Walk progression', desc:'More total steps, still controlled heel-strike gait.', timerSec:600},
+      {name:'Swelling reset', desc:'Ice/elevate after harder sessions.', timerSec:1200},
+    ],
+    text:'Make-or-break window for arthrofibrosis risk. Stalled motion should trigger action in 3 days, not passive waiting for a week.',
+  },
+  {
+    start:29, end:56, title:'Weeks 5–8', mode:'Structured home + outpatient', badge:'good',
+    targets:['Flexion 110–120°+','Strength rising','Improved stairs','Bike 15–20 min'],
+    sessions:[
+      {name:'Mobility maintenance', desc:'Daily motion work stays in the program indefinitely.', timerSec:600},
+      {name:'Strength block', desc:'Mini squats, step-ups, leg press if available.', timerSec:300},
+      {name:'Bike / endurance', desc:'No heavy resistance early. Smooth cadence first.', timerSec:900},
+      {name:'Gait / stairs', desc:'Quality over speed. Alternating steps when ready.', timerSec:300},
+    ],
+    text:'Motion should stabilize while strength and function begin to climb. Keep swelling honest — it tells you when you\'re overdoing it.',
+  },
+  {
+    start:57, end:84, title:'Weeks 8–12', mode:'Function and endurance', badge:'good',
+    targets:['Consistent motion','Functional independence','Longer walks','Terrain progression'],
+    sessions:[
+      {name:'Strength progression', desc:'Continue building but keep swelling as your guide.', timerSec:600},
+      {name:'Longer walking', desc:'Increase duration gradually. Flat terrain first.', timerSec:1200},
+      {name:'Bike / activity build', desc:'Smooth cadence, then resistance progression.', timerSec:1200},
+      {name:'Terrain practice', desc:'Flat to mild uneven ground when surgeon-cleared.', timerSec:600},
+    ],
+    text:'Building an actually usable knee — not just a technically healed one. Outdoor terrain, uneven surfaces, longer distances.',
+  },
+];
+
+const EXERCISES = [
+  {name:'Heel Prop / Extension Stretch', priority:'PRIORITY #1', badge:'alert', desc:'Lie flat. Heel elevated on towel roll, nothing under knee. Let gravity straighten the knee. Relax completely — no quad flexion.', sets:'5–10 min per block, 5–6 times/day', cue:'Back of knee melting toward the surface. Let it go.', timer:600},
+  {name:'Heel Slides', priority:'Daily', badge:'warn', desc:'Lying flat or seated. Slide heel toward body to bend knee. Firm stretch, not sharp pain. Use a towel loop for assist.', sets:'10–15 reps, 5-sec holds', cue:'Breathe into the stretch. Don\'t rush the return.', timer:120},
+  {name:'Quad Sets', priority:'Daily', badge:'warn', desc:'Tighten thigh muscle and press back of knee toward surface. Build contraction to full for 5 sec. Critical for preventing quad atrophy.', sets:'20 reps, multiple times daily', cue:'Think "push the knee down flat." Hold the contraction fully before releasing.', timer:180},
+  {name:'Straight Leg Raises', priority:'Once extension lag resolves', badge:'neutral', desc:'Only when no significant extension lag. Quad set first, then raise leg 12–18 inches. Hold 1–2 sec. Lower slowly.', sets:'10–15 reps', cue:'Lead with your heel. Knee must not sag.', timer:150},
+  {name:'Patellar Mobilization', priority:'Per PT instruction', badge:'warn', desc:'Gently mobilize kneecap medial, lateral, superior, inferior. If patella feels tethered, this is critical. Do not force.', sets:'10 glides per direction', cue:'Move the kneecap, not the whole leg. Small, deliberate movements.', timer:120},
+  {name:'Stationary Bike Rocking', priority:'Week 2+ if cleared', badge:'neutral', desc:'Rock pedals forward and back without completing a full revolution. Builds flexion range progressively. Start with whatever arc is pain-free.', sets:'5–10 min', cue:'Gradually increase the arc each session as flexion allows.', timer:600},
+  {name:'Short Arc Quad / Terminal Knee Extension', priority:'Week 2+', badge:'neutral', desc:'Place roll under knee. Extend leg fully from 30° of flexion. For TKE: standing with band behind knee, push knee to full extension.', sets:'15 reps', cue:'Full contraction at the top. Don\'t let it drop too fast.', timer:150},
+  {name:'Mini Squats', priority:'Week 3+', badge:'neutral', desc:'Feet shoulder-width. Bend knees 20–30°. Weight through heels. Rise slowly. Hold rail for balance initially.', sets:'10–15 reps', cue:'Knees track over toes. No valgus collapse. Slow descent.', timer:180},
+  {name:'Step-Ups (Forward)', priority:'Week 4+', badge:'neutral', desc:'Use a 4–6 inch step. Place surgical leg on step, drive up through heel. Lower the trailing leg slowly. Do not push off with the down leg.', sets:'10 reps each direction', cue:'The work is the lowering phase. Don\'t let it crash down.', timer:180},
+  {name:'Seated Knee Extension', priority:'Per PT', badge:'neutral', desc:'Seated, straighten knee from 90° to full extension. Weights or resistance per PT guidance. Critical: do not use with active patella instability without PT supervision.', sets:'Per PT protocol', cue:'Fully lock out at the top. Hold 1–2 sec.', timer:150},
+  {name:'Walking Laps', priority:'Daily', badge:'warn', desc:'Short, frequent sessions. Heel strike, roll through foot. Knee straight at initial contact. No limping pattern allowed — it reinforces bad gait.', sets:'3–5 min, every 2–3 hours', cue:'Swing arms. Heel hits first. Stand tall.', timer:300},
+  {name:'Ice / Elevation', priority:'After every session', badge:'alert', desc:'Crushed ice in bag with thin cloth barrier. Elevate leg above heart level. Full 20 minutes. Reduces synovial inflammation that drives scar formation.', sets:'20 min, minimum 4×/day', cue:'Leg above heart. Actually 20 minutes, not 10.', timer:1200},
+];
+
+const PREOP_QUESTIONS = [
+  {q:'What exactly is loose — the tibial tray, femoral component, or patellar button?', tag:'Implant'},
+  {q:'Is there evidence of infection as a cause of loosening (culture results, CRP, ESR, aspiration)?', tag:'Infection'},
+  {q:'What components will be replaced vs retained during the revision?', tag:'Implant'},
+  {q:'Will patellar malalignment be corrected — is a patellar re-surfacing or lateral release planned?', tag:'Patella'},
+  {q:'How much scar tissue / arthrofibrosis are you expecting based on imaging and the prior surgery?', tag:'Fibrosis'},
+  {q:'What is your protocol for intraoperative manipulation under anesthesia if ROM is poor early?', tag:'Fibrosis'},
+  {q:'What is the plan if I develop arthrofibrosis post-revision — at what point and how aggressively do you intervene?', tag:'Fibrosis'},
+  {q:'What are the flexion and extension ROM targets I should hit, and by what day/week?', tag:'Goals'},
+  {q:'When do I start physical therapy — same day or day 1 post-op?', tag:'PT'},
+  {q:'Will I need a CPM (continuous passive motion) machine at home?', tag:'PT'},
+  {q:'What is the weight-bearing protocol immediately post-op?', tag:'Recovery'},
+  {q:'What DVT prevention protocol will be used (medication, compression, duration)?', tag:'Safety'},
+  {q:'What are the wound drainage and temperature thresholds that should trigger a call to your office?', tag:'Safety'},
+  {q:'What pain management approach is planned — nerve block, oral meds, IV?', tag:'Pain'},
+  {q:'How long will I need an assistive device (walker, cane)?', tag:'Recovery'},
+  {q:'What activity restrictions apply for the first 2 weeks, 6 weeks, 12 weeks?', tag:'Recovery'},
+  {q:'Are there any activities I should NOT do during recovery that might compromise the revision?', tag:'Recovery'},
+  {q:'What is your opinion on long-term activity goals — birding on uneven terrain, cycling?', tag:'Goals'},
+  {q:'What is the realistic timeline for feeling significantly better than I do now?', tag:'Goals'},
+  {q:'What is the failure rate and most common reason for re-revision in cases like mine?', tag:'Risk'},
+];
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let state = loadState();
+let activeTimers = {};
+
+function loadState() {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  return {
+    surgeryDate: DEFAULT_SURGERY,
+    todayOverride: '',
+    days: {},
+    pt: {nextPt:'', nextSurgeon:'', ptNotes:''},
+    meds: [],
+    medChecks: {},
+    profile: {name:'', surgeon:'', surgeryNotes:''},
+    surgeon: {goals:'', notes:'', customQs:[], checkedQs:{}},
+  };
+}
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function todayISO() { return new Date().toISOString().slice(0,10); }
+function activeDate() { return state.todayOverride || todayISO(); }
+function postOpDay(date) {
+  date = date || activeDate();
+  const a = new Date(date + 'T12:00:00');
+  const s = new Date(state.surgeryDate + 'T12:00:00');
+  return Math.floor((a - s) / 86400000);
+}
+function getPhase(day) {
+  return PROTOCOL.find(p => day >= p.start && day <= p.end) || PROTOCOL[PROTOCOL.length-1];
+}
+function fmtDate(iso) {
+  return new Date(iso + 'T12:00:00').toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric', year:'numeric'});
+}
+function ensureDay(date) {
+  if (!state.days[date]) state.days[date] = {checks:{}, log:{}, notes:''};
+  return state.days[date];
+}
+
+// ═══════════════════════════════════════════
+// TAB NAVIGATION
+// ═══════════════════════════════════════════
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    const panel = document.getElementById('tab-' + tab.dataset.tab);
+    if (panel) panel.classList.add('active');
+    if (tab.dataset.tab === 'history') renderHistory();
+    if (tab.dataset.tab === 'surgeon') renderSurgeonPrep();
+    if (tab.dataset.tab === 'meds') renderMeds();
+  });
+});
+
+// ═══════════════════════════════════════════
+// HERO / HEADER
+// ═══════════════════════════════════════════
+function renderHero() {
+  const day = postOpDay();
+  const phase = getPhase(Math.max(0, day));
+  const name = state.profile?.name ? state.profile.name + '\'s' : 'Knee Revision';
+  document.getElementById('heroTitle').textContent = name + ' Rehab';
+  document.getElementById('heroPhase').textContent = phase.title + ' · ' + phase.mode;
+  document.getElementById('heroDay').textContent = day < 0 ? 'Pre-op' : day;
+  document.getElementById('heroWeek').textContent = day < 0 ? '—' : Math.ceil((day+1)/7);
+
+  // last flexion
+  const sorted = Object.entries(state.days)
+    .filter(([,v]) => v.log?.flexion !== '' && v.log?.flexion !== undefined)
+    .sort((a,b) => a[0].localeCompare(b[0]));
+  const lastFlex = sorted.length ? sorted[sorted.length-1][1].log.flexion : '—';
+  document.getElementById('heroFlexion').textContent = lastFlex + (lastFlex !== '—' ? '°' : '');
+}
+
+// ═══════════════════════════════════════════
+// TODAY CHECKLIST
+// ═══════════════════════════════════════════
+function renderToday() {
+  renderHero();
+  const date = activeDate();
+  const day = postOpDay();
+  const phase = getPhase(Math.max(0, day));
+  const data = ensureDay(date);
+
+  document.getElementById('todayDateLine').textContent = fmtDate(date) + (day >= 0 ? ` · Post-op day ${day}` : ' · Pre-op');
+  document.getElementById('phasePill').textContent = phase.title;
+  document.getElementById('phaseDesc').textContent = phase.text;
+
+  // Targets
+  const tpills = document.getElementById('targetPills');
+  tpills.innerHTML = phase.targets.map(t => `<span class="pill accent">${t}</span>`).join('');
+
+  // Checklist
+  const cl = document.getElementById('todayChecklist');
+  cl.innerHTML = '';
+  phase.sessions.forEach((s, i) => {
+    const id = `s${i}`;
+    const done = !!data.checks[id];
+    const item = document.createElement('label');
+    item.className = 'check-item' + (done ? ' done' : '');
+    item.innerHTML = `
+      <input type="checkbox" ${done ? 'checked' : ''} data-id="${id}">
+      <div>
+        <span class="check-title">${s.priority ? '⭐ ' : ''}${s.name}</span>
+        <span class="check-desc">${s.desc}</span>
+      </div>`;
+    item.querySelector('input').addEventListener('change', e => {
+      data.checks[e.target.dataset.id] = e.target.checked;
+      saveState();
+      item.classList.toggle('done', e.target.checked);
+      renderProgress();
+    });
+    cl.appendChild(item);
+  });
+
+  renderProgress();
+  loadLogInputs();
+  renderAlerts();
+  renderCharts();
+  renderArfAlerts();
+}
+
+function renderProgress() {
+  const date = activeDate();
+  const data = ensureDay(date);
+  const day = postOpDay();
+  const phase = getPhase(Math.max(0, day));
+  const total = phase.sessions.length;
+  const done = Object.values(data.checks).filter(Boolean).length;
+  const pct = total ? Math.round(done * 100 / total) : 0;
+  document.getElementById('progBar').style.width = pct + '%';
+  const badge = document.getElementById('progressBadge');
+  badge.textContent = `${done} / ${total}`;
+  badge.className = 'badge ' + (pct === 100 ? 'badge-good' : pct > 50 ? 'badge-warn' : 'badge-neutral');
+}
+
+// ═══════════════════════════════════════════
+// LOG INPUTS
+// ═══════════════════════════════════════════
+function loadLogInputs() {
+  const data = ensureDay(activeDate());
+  const l = data.log || {};
+  ['flexion','extension','pain','temp','walks','iceBlocks','steps'].forEach(id => {
+    document.getElementById(id).value = l[id] ?? '';
+  });
+  document.getElementById('swelling').value = l.swelling ?? '';
+  document.getElementById('dayNotes').value = l.notes ?? '';
+  renderStars('sleepStars', l.sleep ?? 0);
+  renderStars('moodStars', l.mood ?? 0);
+}
+
+function saveLog() {
+  const date = activeDate();
+  const data = ensureDay(date);
+  const numOf = id => { const v = document.getElementById(id).value; return v === '' ? '' : Number(v); };
+  data.log = {
+    flexion: numOf('flexion'),
+    extension: numOf('extension'),
+    pain: numOf('pain'),
+    temp: numOf('temp'),
+    walks: numOf('walks'),
+    iceBlocks: numOf('iceBlocks'),
+    steps: numOf('steps'),
+    swelling: document.getElementById('swelling').value,
+    notes: document.getElementById('dayNotes').value,
+    sleep: getSleepVal(),
+    mood: getMoodVal(),
+  };
+  saveState();
+  renderCharts();
+  renderArfAlerts();
+  renderHero();
+  flashSaved('saveLog');
+}
+
+// ═══════════════════════════════════════════
+// STAR RATINGS
+// ═══════════════════════════════════════════
+function renderStars(containerId, val) {
+  document.querySelectorAll(`#${containerId} .star`).forEach(s => {
+    s.classList.toggle('lit', parseInt(s.dataset.v) <= val);
+  });
+}
+function getSleepVal() {
+  let v = 0;
+  document.querySelectorAll('#sleepStars .star.lit').forEach(s => { v = Math.max(v, parseInt(s.dataset.v)); });
+  return v;
+}
+function getMoodVal() {
+  let v = 0;
+  document.querySelectorAll('#moodStars .star.lit').forEach(s => { v = Math.max(v, parseInt(s.dataset.v)); });
+  return v;
+}
+['sleepStars','moodStars'].forEach(id => {
+  document.querySelectorAll(`#${id} .star`).forEach(s => {
+    s.addEventListener('click', () => {
+      const val = parseInt(s.dataset.v);
+      renderStars(id, val);
+    });
+  });
+});
+
+// ═══════════════════════════════════════════
+// ALERTS / ARF GUARD
+// ═══════════════════════════════════════════
+function renderAlerts() {
+  const container = document.getElementById('alertsContainer');
+  const day = postOpDay();
+  const data = ensureDay(activeDate()).log || {};
+  const alerts = [];
+
+  if (data.temp && data.temp >= 101.5)
+    alerts.push({level:'alert', msg:'<strong>🚨 Temperature ≥ 101.5°F.</strong> Call your surgical team today — this may indicate infection.'});
+  if (data.swelling === 'Much worse' || data.swelling === 'Worse')
+    alerts.push({level:'warn', msg:'<strong>Swelling worsening.</strong> Ice more consistently (20 min blocks, 4–6×/day). Elevate leg above heart. Reduce session intensity if overdoing it.'});
+  if (day >= 0 && data.pain >= 8)
+    alerts.push({level:'warn', msg:'<strong>Pain 8+/10.</strong> Contact surgical team if unusual. Review medication schedule. Do not push through severe pain.'});
+  if (day >= 7 && data.extension > 3)
+    alerts.push({level:'alert', msg:'<strong>Extension lag > 3° at day 7+.</strong> This is the #1 priority. Increase heel prop frequency. Raise with PT and surgeon.'});
+  if (day >= 14 && data.flexion !== '' && data.flexion < 80)
+    alerts.push({level:'alert', msg:'<strong>Flexion < 80° at week 2+.</strong> Significantly behind expected range. Do not wait — contact PT for an urgent review.'});
+  if (day >= 21 && data.flexion !== '' && data.flexion < 90)
+    alerts.push({level:'alert', msg:'<strong>🚨 Flexion < 90° at week 3.</strong> Red flag for arthrofibrosis. Contact surgeon promptly. Discuss aggressive intervention timing.'});
+
+  container.innerHTML = alerts.map(a => `<div class="alertbox ${a.level}" style="margin-bottom:8px">${a.msg}</div>`).join('');
+}
+
+function renderArfAlerts() {
+  const day = postOpDay();
+  const data = ensureDay(activeDate()).log || {};
+  const box = document.getElementById('arfAlerts');
+  const msgs = [];
+
+  if (day >= 0 && day <= 7 && data.extension !== '' && data.extension > 3)
+    msgs.push({level:'alert', msg:'Extension lag > 3° in the first week. Every day counts here — add another heel prop block.'});
+  else if (day >= 0 && (data.extension === '' || data.extension === undefined))
+    msgs.push({level:'info', msg:'Log extension today. Extension tracking is the most important data point for this recovery.'});
+  else if (data.extension <= 2)
+    msgs.push({level:'good', msg:'Extension looks good. Keep daily heel prop in your routine — do not drop it as flexion improves.'});
+
+  if (day >= 7 && data.flexion !== '' && data.flexion < 85)
+    msgs.push({level:'alert', msg:`Flexion at ${data.flexion}° is behind for day ${day}. Increase heel slide frequency. Ask PT about manual overpressure.`});
+
+  if (!msgs.length)
+    msgs.push({level:'good', msg:'No major arthrofibrosis red flags from today\'s log. Maintain extension focus and consistent icing.'});
+
+  box.innerHTML = msgs.map(m => `<div class="alertbox ${m.level}">${m.msg}</div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════════
+function getEntries(n=14) {
+  return Object.entries(state.days)
+    .filter(([,v]) => v.log && Object.keys(v.log).some(k => v.log[k] !== '' && v.log[k] !== undefined))
+    .sort((a,b) => a[0].localeCompare(b[0]))
+    .slice(-n);
+}
+
+function renderCharts() {
+  const entries = getEntries();
+  drawChart('chartFlexion', entries.map(([d,v]) => ({label:d.slice(5), val:v.log?.flexion})), {min:50, max:140, good:'high', color:'#2d6a4f'});
+  drawChart('chartExt', entries.map(([d,v]) => ({label:d.slice(5), val:v.log?.extension})), {min:0, max:15, good:'low', color:'#e65100'});
+  drawChart('chartPain', entries.map(([d,v]) => ({label:d.slice(5), val:v.log?.pain})), {min:0, max:10, good:'low', color:'#b71c1c'});
+}
+
+function drawChart(id, points, opts) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 130 * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = 130;
+  ctx.clearRect(0,0,W,H);
+
+  const PL=34, PR=10, PT=10, PB=24;
+  const cw = W - PL - PR, ch = H - PT - PB;
+
+  // Grid
+  ctx.strokeStyle='#e0d9d0'; ctx.lineWidth=1;
+  for (let i=0; i<=4; i++) {
+    const y = PT + ch * (i/4);
+    ctx.beginPath(); ctx.moveTo(PL, y); ctx.lineTo(PL+cw, y); ctx.stroke();
+    const val = Math.round(opts.max - (opts.max - opts.min) * (i/4));
+    ctx.fillStyle='#8a7e70'; ctx.font=`10px 'DM Mono', monospace`;
+    ctx.fillText(val, 2, y+4);
+  }
+
+  const valid = points.filter(p => p.val !== '' && p.val !== undefined && !isNaN(p.val));
+  if (!valid.length) {
+    ctx.fillStyle='#b0a89f'; ctx.font="12px 'DM Sans', sans-serif"; ctx.fillText('No entries yet', PL+10, H/2+4);
+    return;
+  }
+
+  // Line
+  ctx.strokeStyle = opts.color; ctx.lineWidth=2.5; ctx.lineJoin='round';
+  ctx.beginPath();
+  let first = true;
+  points.forEach((p, i) => {
+    if (p.val === '' || p.val === undefined || isNaN(p.val)) return;
+    const x = PL + cw * (points.length === 1 ? 0.5 : i / (points.length-1));
+    const y = PT + ch * (1 - (p.val - opts.min) / (opts.max - opts.min));
+    if (first) { ctx.moveTo(x,y); first=false; } else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // Dots + labels
+  points.forEach((p, i) => {
+    const x = PL + cw * (points.length === 1 ? 0.5 : i / (points.length-1));
+    ctx.fillStyle='#8a7e70'; ctx.font="9px 'DM Mono', monospace";
+    const lbl = p.label || '';
+    ctx.fillText(lbl, x - 8, H - 6);
+    if (p.val === '' || p.val === undefined || isNaN(p.val)) return;
+    const y = PT + ch * (1 - (p.val - opts.min) / (opts.max - opts.min));
+    ctx.fillStyle = opts.color;
+    ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI*2); ctx.fill();
+  });
+}
+
+// ═══════════════════════════════════════════
+// EXERCISES WITH TIMERS
+// ═══════════════════════════════════════════
+function renderExercises() {
+  const list = document.getElementById('exerciseList');
+  list.innerHTML = '';
+  EXERCISES.forEach((ex, idx) => {
+    const card = document.createElement('div');
+    card.className = 'exercise-card';
+    const badgeClass = ex.badge === 'alert' ? 'badge-alert' : ex.badge === 'warn' ? 'badge-warn' : 'badge-neutral';
+    card.innerHTML = `
+      <div class="exercise-header" data-idx="${idx}">
+        <div>
+          <div class="exercise-name">${ex.name}</div>
+          <div style="font-size:.75rem;color:var(--ink2);margin-top:2px">${ex.sets}</div>
+        </div>
+        <span class="badge ${badgeClass} exercise-priority">${ex.priority}</span>
+      </div>
+      <div class="exercise-body" id="exbody-${idx}">
+        <div style="font-size:.88rem;line-height:1.6;margin-bottom:10px">${ex.desc}</div>
+        <div class="alertbox info" style="margin-bottom:12px;font-size:.82rem"><strong>Cue:</strong> ${ex.cue}</div>
+        ${ex.timer ? `
+        <div class="timer-display" id="timer-${idx}">${fmtTime(ex.timer)}</div>
+        <div class="timer-controls">
+          <button class="btn-primary btn-sm" onclick="startTimer(${idx}, ${ex.timer})">▶ Start</button>
+          <button class="btn-secondary btn-sm" onclick="pauseTimer(${idx})">⏸ Pause</button>
+          <button class="btn-secondary btn-sm" onclick="resetTimer(${idx}, ${ex.timer})">↺ Reset</button>
+        </div>` : ''}
+      </div>`;
+    card.querySelector('.exercise-header').addEventListener('click', () => {
+      const body = document.getElementById(`exbody-${idx}`);
+      body.classList.toggle('open');
+    });
+    list.appendChild(card);
+  });
+}
+
+function fmtTime(sec) {
+  const m = Math.floor(sec/60).toString().padStart(2,'0');
+  const s = (sec%60).toString().padStart(2,'0');
+  return `${m}:${s}`;
+}
+function startTimer(idx, totalSec) {
+  if (activeTimers[idx]) clearInterval(activeTimers[idx]);
+  const display = document.getElementById(`timer-${idx}`);
+  let remaining = totalSec;
+  activeTimers[idx] = setInterval(() => {
+    remaining--;
+    display.textContent = fmtTime(remaining);
+    if (remaining <= 0) {
+      clearInterval(activeTimers[idx]);
+      display.textContent = '✓ Done!';
+      display.style.color = 'var(--accent2)';
+    }
+  }, 1000);
+}
+function pauseTimer(idx) {
+  if (activeTimers[idx]) { clearInterval(activeTimers[idx]); activeTimers[idx] = null; }
+}
+function resetTimer(idx, totalSec) {
+  pauseTimer(idx);
+  const display = document.getElementById(`timer-${idx}`);
+  display.textContent = fmtTime(totalSec);
+  display.style.color = 'var(--accent)';
+}
+
+// ═══════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════
+function renderHistory() {
+  const entries = Object.entries(state.days)
+    .filter(([,v]) => v.log && Object.keys(v.log).length)
+    .sort((a,b) => b[0].localeCompare(a[0]));
+
+  const tbody = document.getElementById('histBody');
+  if (!entries.length) {
+    tbody.innerHTML = '<tr><td colspan="10" class="no-data">No logged days yet. Save your first daily log on the Today tab.</td></tr>';
+  } else {
+    tbody.innerHTML = entries.map(([date, v]) => {
+      const l = v.log || {};
+      const day = postOpDay(date);
+      const stars = n => n ? '★'.repeat(n) + '☆'.repeat(5-n) : '—';
+      return `<tr>
+        <td>${date}</td>
+        <td>${day >= 0 ? day : 'pre'}</td>
+        <td>${l.flexion ?? '—'}</td>
+        <td>${l.extension ?? '—'}</td>
+        <td>${l.pain ?? '—'}</td>
+        <td>${l.swelling ?? '—'}</td>
+        <td>${l.walks ?? '—'}</td>
+        <td>${l.steps ?? '—'}</td>
+        <td style="letter-spacing:.05em">${stars(l.sleep)}</td>
+        <td style="max-width:200px;font-family:'DM Sans',sans-serif;font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.notes || ''}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  renderHeatmap();
+}
+
+function renderHeatmap() {
+  const container = document.getElementById('heatmapContainer');
+  const surgery = new Date(state.surgeryDate + 'T12:00:00');
+  const today = new Date(activeDate() + 'T12:00:00');
+  const days = Math.min(Math.floor((today - surgery) / 86400000) + 1, 90);
+  if (days <= 0) { container.innerHTML = '<div style="color:var(--ink2);font-size:.85rem">Heatmap will appear after surgery date.</div>'; return; }
+
+  let html = '<div class="heatmap-grid">';
+  for (let i = 0; i < days; i++) {
+    const d = new Date(surgery.getTime() + i * 86400000).toISOString().slice(0,10);
+    const hasLog = state.days[d] && state.days[d].log && Object.keys(state.days[d].log).length;
+    const checks = state.days[d] ? Object.values(state.days[d].checks || {}).filter(Boolean).length : 0;
+    const lvl = hasLog ? (checks >= 4 ? 3 : checks >= 2 ? 2 : 1) : 0;
+    html += `<div class="hm-cell day${lvl}" title="Day ${i}: ${d}${hasLog?' (logged)':''}" data-date="${d}"></div>`;
+  }
+  html += '</div>';
+  html += '<div style="margin-top:8px;font-size:.75rem;color:var(--ink2)">⬛ No log &nbsp; 🟩 Logged &nbsp; Darker = more sessions completed</div>';
+  container.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════
+// PROTOCOL VIEW
+// ═══════════════════════════════════════════
+function renderProtocol() {
+  const day = postOpDay();
+  const list = document.getElementById('protocolList');
+  list.innerHTML = '';
+  PROTOCOL.forEach(p => {
+    const isCurrent = day >= p.start && day <= p.end;
+    const isCompleted = day > p.end;
+    const div = document.createElement('div');
+    div.className = 'phase-row' + (isCurrent ? ' current' : isCompleted ? ' completed' : '');
+    const badgeClass = p.badge === 'alert' ? 'badge-alert' : p.badge === 'warn' ? 'badge-warn' : 'badge-good';
+    div.innerHTML = `
+      <div class="phase-header">
+        <span class="phase-title">${isCurrent ? '▶ ' : isCompleted ? '✓ ' : ''}${p.title}</span>
+        <span class="badge ${badgeClass}">${p.mode}</span>
+      </div>
+      <div style="font-size:.85rem;color:var(--ink2);line-height:1.5;margin:6px 0">${p.text}</div>
+      <div class="phase-targets">${p.targets.map(t => `<span class="phase-target">${t}</span>`).join('')}</div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════
+// SURGEON PREP
+// ═══════════════════════════════════════════
+function renderSurgeonPrep() {
+  const allQs = [...PREOP_QUESTIONS, ...(state.surgeon.customQs || []).map(q => ({q, tag:'Custom'}))];
+  const list = document.getElementById('preOpQList');
+  list.innerHTML = allQs.map((item, i) => {
+    const checked = state.surgeon.checkedQs?.[i] ?? false;
+    return `<div class="q-item">
+      <input type="checkbox" ${checked ? 'checked' : ''} data-qi="${i}" class="q-check">
+      <div class="q-text">${item.q} <span class="q-tag">${item.tag}</span></div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.q-check').forEach(cb => {
+    cb.addEventListener('change', e => {
+      if (!state.surgeon.checkedQs) state.surgeon.checkedQs = {};
+      state.surgeon.checkedQs[e.target.dataset.qi] = e.target.checked;
+      saveState();
+    });
+  });
+  document.getElementById('patientGoals').value = state.surgeon.goals || '';
+  document.getElementById('surgeonNotes').value = state.surgeon.notes || '';
+}
+
+document.getElementById('addCustomQ').addEventListener('click', () => {
+  const input = document.getElementById('customQInput');
+  const q = input.value.trim();
+  if (!q) return;
+  if (!state.surgeon.customQs) state.surgeon.customQs = [];
+  state.surgeon.customQs.push(q);
+  saveState();
+  input.value = '';
+  renderSurgeonPrep();
+});
+
+document.getElementById('clearChecked').addEventListener('click', () => {
+  state.surgeon.checkedQs = {};
+  saveState();
+  renderSurgeonPrep();
+});
+
+document.getElementById('copyQs').addEventListener('click', () => {
+  const allQs = [...PREOP_QUESTIONS, ...(state.surgeon.customQs || []).map(q => ({q, tag:'Custom'}))];
+  const checked = Object.entries(state.surgeon.checkedQs || {})
+    .filter(([,v]) => v)
+    .map(([i]) => allQs[i]?.q)
+    .filter(Boolean);
+  if (!checked.length) { alert('No questions checked.'); return; }
+  navigator.clipboard.writeText(checked.map((q,i) => `${i+1}. ${q}`).join('\n'))
+    .then(() => alert('Copied ' + checked.length + ' questions to clipboard.'))
+    .catch(() => alert(checked.map((q,i) => `${i+1}. ${q}`).join('\n')));
+});
+
+document.getElementById('saveGoals').addEventListener('click', () => {
+  state.surgeon.goals = document.getElementById('patientGoals').value;
+  saveState(); flashSaved('saveGoals');
+});
+document.getElementById('saveSurgeonNotes').addEventListener('click', () => {
+  state.surgeon.notes = document.getElementById('surgeonNotes').value;
+  saveState(); flashSaved('saveSurgeonNotes');
+});
+
+// ═══════════════════════════════════════════
+// MEDICATIONS
+// ═══════════════════════════════════════════
+function renderMeds() {
+  document.getElementById('medDate').textContent = fmtDate(activeDate());
+  const today = activeDate();
+  if (!state.medChecks[today]) state.medChecks[today] = {};
+
+  const list = document.getElementById('medList');
+  if (!state.meds.length) {
+    list.innerHTML = '<div style="color:var(--ink2);font-size:.88rem;padding:10px 0">No medications added yet. Add them in the panel on the right.</div>';
+  } else {
+    list.innerHTML = state.meds.map((med, i) => {
+      const checked = state.medChecks[today][i] ?? false;
+      return `<div class="med-item">
+        <input type="checkbox" class="med-check" ${checked ? 'checked' : ''} data-mi="${i}">
+        <div>
+          <div class="med-name">${med.name}</div>
+          <div class="med-dose">${med.dose} · ${med.freq}</div>
+          ${med.notes ? `<div style="font-size:.75rem;color:var(--ink2)">${med.notes}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('.med-check').forEach(cb => {
+      cb.addEventListener('change', e => {
+        state.medChecks[today][e.target.dataset.mi] = e.target.checked;
+        saveState();
+      });
+    });
+  }
+
+  const editList = document.getElementById('medEditList');
+  editList.innerHTML = state.meds.map((med, i) =>
+    `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;font-size:.85rem">
+      <span><strong>${med.name}</strong> · ${med.dose} · ${med.freq}</span>
+      <button class="btn-secondary btn-sm" onclick="removeMed(${i})">✕</button>
+    </div>`
+  ).join('') || '<div style="font-size:.82rem;color:var(--ink2)">No medications yet.</div>';
+}
+
+function removeMed(i) {
+  state.meds.splice(i, 1);
+  saveState();
+  renderMeds();
+}
+
+document.getElementById('addMed').addEventListener('click', () => {
+  const name = document.getElementById('medName').value.trim();
+  if (!name) return;
+  state.meds.push({
+    name,
+    dose: document.getElementById('medDose').value.trim(),
+    freq: document.getElementById('medFreq').value.trim(),
+    notes: document.getElementById('medNotes').value.trim(),
+  });
+  saveState();
+  ['medName','medDose','medFreq','medNotes'].forEach(id => document.getElementById(id).value = '');
+  renderMeds();
+});
+
+document.getElementById('resetMeds').addEventListener('click', () => {
+  state.medChecks[activeDate()] = {};
+  saveState(); renderMeds();
+});
+
+// ═══════════════════════════════════════════
+// AI COACH
+// ═══════════════════════════════════════════
+const SUGGESTED_QUESTIONS = [
+  'Why is my extension still lagging and what can I do today?',
+  'How do I know if I\'m overdoing it vs not doing enough?',
+  'What should I prioritize between flexion and extension right now?',
+  'What are signs that arthrofibrosis is actually setting in?',
+  'How should I adjust if I have a very swollen day?',
+  'When should I expect my pain to start meaningfully decreasing?',
+];
+
+function renderSuggestedQs() {
+  const container = document.getElementById('suggestedQs');
+  const btnContainer = document.getElementById('aiQuickBtns');
+  container.innerHTML = SUGGESTED_QUESTIONS.map(q =>
+    `<div style="padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;font-size:.85rem;cursor:pointer;background:var(--card2);transition:background .1s" 
+      onclick="document.getElementById('aiQuestion').value=\`${q}\`">${q}</div>`
+  ).join('');
+  btnContainer.innerHTML = ['Extension tips','Flexion stuck','Pain spike','Swelling today'].map(label =>
+    `<span class="pill" style="cursor:pointer" onclick="quickAsk('${label}')">${label}</span>`
+  ).join('');
+}
+
+const QUICK_PROMPTS = {
+  'Extension tips': 'Give me 3 specific things I can do today to improve my knee extension.',
+  'Flexion stuck': 'My flexion seems stuck. What are reasons this happens and what should I try?',
+  'Pain spike': 'I had a pain spike today. How do I know if I should be worried vs just had a hard day?',
+  'Swelling today': 'Swelling is worse today. What\'s my management protocol and when should I call?',
+};
+
+function quickAsk(label) {
+  document.getElementById('aiQuestion').value = QUICK_PROMPTS[label] || label;
+  askAI();
+}
+
+function buildContext() {
+  const day = postOpDay();
+  const phase = getPhase(Math.max(0, day));
+  const entries = getEntries(7);
+  const recentData = entries.map(([date, v]) => {
+    const l = v.log || {};
+    return `Day ${postOpDay(date)}: flex ${l.flexion ?? 'N/A'}°, ext lag ${l.extension ?? 'N/A'}°, pain ${l.pain ?? 'N/A'}/10, swelling: ${l.swelling || 'N/A'}`;
+  }).join('\n');
+  const todayLog = ensureDay(activeDate()).log || {};
+
+  return `PATIENT CONTEXT:
+Post-op day: ${day}
+Current phase: ${phase.title} (${phase.mode})
+Phase targets: ${phase.targets.join(', ')}
+Surgery type: Revision TKA. High arthrofibrosis risk. History of aseptic loosening, patellar malalignment, and prior scar tissue from original TKA.
+
+TODAY'S LOG:
+- Flexion: ${todayLog.flexion ?? 'not logged'}°
+- Extension lag: ${todayLog.extension ?? 'not logged'}°  
+- Pain: ${todayLog.pain ?? 'not logged'}/10
+- Swelling: ${todayLog.swelling || 'not logged'}
+- Walks: ${todayLog.walks ?? 'not logged'}
+- Notes: ${todayLog.notes || 'none'}
+
+RECENT TREND (last 7 days):
+${recentData || 'No prior entries yet'}`;
+}
+
+async function askAI() {
+  const question = document.getElementById('aiQuestion').value.trim();
+  if (!question) return;
+  const responseEl = document.getElementById('aiResponse');
+  responseEl.innerHTML = '<div class="ai-thinking"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div>';
+  responseEl.className = 'ai-bubble loading';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `You are a knowledgeable rehabilitation assistant specializing in total knee arthroplasty recovery, particularly revision TKA with arthrofibrosis risk. You provide practical, specific, evidence-informed guidance.
+
+Key priorities for this patient:
+1. Extension is priority #1 — extension loss is permanent if untreated
+2. Arthrofibrosis risk is HIGH — act early on any stalled ROM
+3. Patellar tracking/malalignment is a factor
+4. Frequent, short sessions beat infrequent intense sessions
+5. Swelling control is critical — ice and elevation are not optional
+
+Always be specific and actionable. Flag anything that needs surgeon/PT contact. This is informational guidance, not medical advice.`,
+        messages: [{
+          role: 'user',
+          content: `${buildContext()}\n\nPATIENT QUESTION: ${question}`
+        }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content?.map(c => c.text || '').join('') || 'No response received.';
+    responseEl.textContent = text;
+    responseEl.className = 'ai-bubble';
+  } catch(e) {
+    responseEl.textContent = 'Could not connect to AI. Check your connection and try again.';
+    responseEl.className = 'ai-bubble';
+  }
+}
+
+async function genSummary() {
+  const summaryEl = document.getElementById('aiSummary');
+  summaryEl.innerHTML = '<div class="ai-thinking"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div>';
+  summaryEl.className = 'ai-bubble loading';
+
+  const day = postOpDay();
+  const phase = getPhase(Math.max(0, day));
+  const todayLog = ensureDay(activeDate()).log || {};
+  const checks = ensureDay(activeDate()).checks || {};
+  const total = phase.sessions.length;
+  const done = Object.values(checks).filter(Boolean).length;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `You are a rehabilitation assistant for revision TKA recovery. Generate a concise daily summary and next-steps recommendation. Be warm, specific, and clinical. Use plain language. 3-4 short paragraphs maximum.`,
+        messages: [{
+          role: 'user',
+          content: `${buildContext()}\n\nSession completion: ${done}/${total} sessions done today.\n\nGenerate a brief daily summary covering: (1) where this patient stands today, (2) the most important thing they did right or need to do, (3) one specific recommendation for tomorrow. End with a short encouraging note.`
+        }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content?.map(c => c.text || '').join('') || 'No summary generated.';
+    summaryEl.textContent = text;
+    summaryEl.className = 'ai-bubble';
+  } catch(e) {
+    summaryEl.textContent = 'Could not connect to AI.';
+    summaryEl.className = 'ai-bubble';
+  }
+}
+
+document.getElementById('askAI').addEventListener('click', askAI);
+document.getElementById('clearAI').addEventListener('click', () => {
+  document.getElementById('aiQuestion').value = '';
+  document.getElementById('aiResponse').textContent = 'Ask a question above to get personalized guidance.';
+});
+document.getElementById('genSummary').addEventListener('click', genSummary);
+
+// ═══════════════════════════════════════════
+// SETTINGS & IMPORT/EXPORT
+// ═══════════════════════════════════════════
+document.getElementById('applyDates').addEventListener('click', () => {
+  state.surgeryDate = document.getElementById('surgeryDate').value || DEFAULT_SURGERY;
+  state.todayOverride = document.getElementById('todayOverride').value || '';
+  saveState(); init();
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(() => {}));
+});
+document.getElementById('useToday').addEventListener('click', () => {
+  state.todayOverride = ''; saveState(); init();
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(() => {}));
+});
+document.getElementById('saveProfile').addEventListener('click', () => {
+  if (!state.profile) state.profile = {};
+  state.profile.name = document.getElementById('patientName').value;
+  state.profile.surgeon = document.getElementById('surgeonName').value;
+  state.profile.surgeryNotes = document.getElementById('surgeryNotes').value;
+  saveState(); flashSaved('saveProfile'); renderHero();
+});
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'revision-tka-rehab-' + todayISO() + '.json'; a.click();
+  URL.revokeObjectURL(a.href);
+});
+document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', e => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try { state = JSON.parse(ev.target.result); saveState(); init();
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(() => {})); alert('Data imported successfully.'); }
+    catch { alert('Import failed — choose a valid backup JSON file.'); }
+  };
+  reader.readAsText(file);
+});
+document.getElementById('clearAllBtn').addEventListener('click', () => {
+  if (confirm('Clear ALL data? This cannot be undone.')) {
+    localStorage.removeItem(STORAGE_KEY); location.reload();
+  }
+});
+
+document.getElementById('saveLog').addEventListener('click', saveLog);
+document.getElementById('loadToday').addEventListener('click', loadLogInputs);
+document.getElementById('markAll').addEventListener('click', () => {
+  const data = ensureDay(activeDate());
+  const day = postOpDay();
+  const phase = getPhase(Math.max(0, day));
+  phase.sessions.forEach((_,i) => data.checks[`s${i}`] = true);
+  saveState(); renderToday();
+});
+document.getElementById('resetToday').addEventListener('click', () => {
+  ensureDay(activeDate()).checks = {}; saveState(); renderToday();
+});
+document.getElementById('savePt').addEventListener('click', () => {
+  state.pt.nextPt = document.getElementById('nextPt').value;
+  state.pt.nextSurgeon = document.getElementById('nextSurgeon').value;
+  state.pt.ptNotes = document.getElementById('ptNotes').value;
+  saveState(); flashSaved('savePt');
+});
+
+// ═══════════════════════════════════════════
+// UTILITY
+// ═══════════════════════════════════════════
+function flashSaved(btnId) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  const orig = btn.textContent;
+  btn.textContent = '✓ Saved';
+  btn.style.background = 'var(--accent2)';
+  setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1500);
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+function init() {
+  document.getElementById('surgeryDate').value = state.surgeryDate || DEFAULT_SURGERY;
+  document.getElementById('todayOverride').value = state.todayOverride || '';
+  document.getElementById('patientName').value = state.profile?.name || '';
+  document.getElementById('surgeonName').value = state.profile?.surgeon || '';
+  document.getElementById('surgeryNotes').value = state.profile?.surgeryNotes || '';
+  document.getElementById('nextPt').value = state.pt?.nextPt || '';
+  document.getElementById('nextSurgeon').value = state.pt?.nextSurgeon || '';
+  document.getElementById('ptNotes').value = state.pt?.ptNotes || '';
+
+  renderToday();
+  renderExercises();
+  renderProtocol();
+  renderSuggestedQs();
+}
+
+// Redraw charts on resize
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => renderCharts(), 150);
+});
+
+init();
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(() => {}));
+</script>
+</body>
+</html>
